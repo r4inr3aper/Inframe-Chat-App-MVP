@@ -43,7 +43,7 @@
         "@react-three/drei": "^10.4.4",
         "@react-three/fiber": "^9.0.0-alpha.8",
         "@tabler/icons-react": "^3.34.1",
-        "@tailwindcss/typography": "^0.5.16",
+
         "@tsparticles/engine": "^3.8.1",
         "@tsparticles/react": "^3.0.0",
         "@tsparticles/slim": "^3.8.1",
@@ -92,16 +92,17 @@
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3.3.1",
-        "@tailwindcss/postcss": "^4",
+        "@tailwindcss/typography": "^0.5.16",
         "@types/node": "^20",
         "@types/react": "^19",
         "@types/react-dom": "^19",
         "@types/react-syntax-highlighter": "^15.5.13",
         "@types/three": "^0.178.0",
+        "autoprefixer": "^10.4.20",
         "eslint": "^9.32.0",
         "eslint-config-next": "^15.4.5",
-        "tailwindcss": "^4",
-        "tw-animate-css": "^1.3.6",
+        "postcss": "^8.4.49",
+        "tailwindcss": "^3.4.17",
         "typescript": "^5"
     }
 }
