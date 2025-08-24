@@ -1,0 +1,120 @@
+[
+  {
+    "id": "chat-001",
+    "professorId": "prof-001",
+    "messages": [
+      {
+        "id": "msg-001",
+        "content": "Hello! I saw you're interested in machine learning. How can I help you today?",
+        "timestamp": "2024-01-15T10:30:00Z",
+        "sender": "professor",
+        "status": "delivered",
+        "type": "text"
+      },
+      {
+        "id": "msg-002",
+        "content": "Hi Dr. Mitchell! I'm struggling with understanding neural networks. Could you explain the backpropagation algorithm?",
+        "timestamp": "2024-01-15T10:32:00Z",
+        "sender": "user",
+        "status": "read",
+        "type": "text"
+      },
+      {
+        "id": "msg-003",
+        "content": "Of course! Backpropagation is the key algorithm for training neural networks. It works by calculating gradients of the loss function with respect to each weight by applying the chain rule of calculus. Would you like me to walk through a simple example?",
+        "timestamp": "2024-01-15T10:35:00Z",
+        "sender": "professor",
+        "status": "delivered",
+        "type": "text"
+      },
+      {
+        "id": "msg-004",
+        "content": "Yes, that would be really helpful! A simple example would be great.",
+        "timestamp": "2024-01-15T10:36:00Z",
+        "sender": "user",
+        "status": "read",
+        "type": "text"
+      }
+    ],
+    "unreadCount": 0,
+    "isActive": true,
+    "createdAt": "2024-01-15T10:30:00Z",
+    "updatedAt": "2024-01-15T10:36:00Z"
+  },
+  {
+    "id": "chat-002",
+    "professorId": "prof-003",
+    "messages": [
+      {
+        "id": "msg-005",
+        "content": "Good morning! I'm here to help with any physics questions you might have.",
+        "timestamp": "2024-01-14T09:00:00Z",
+        "sender": "professor",
+        "status": "delivered",
+        "type": "text"
+      },
+      {
+        "id": "msg-006",
+        "content": "Good morning Dr. Rodriguez! I have a question about quantum entanglement. How does it work exactly?",
+        "timestamp": "2024-01-14T09:15:00Z",
+        "sender": "user",
+        "status": "read",
+        "type": "text"
+      },
+      {
+        "id": "msg-007",
+        "content": "Great question! Quantum entanglement is a phenomenon where two or more particles become correlated in such a way that the quantum state of each particle cannot be described independently. When particles are entangled, measuring one particle instantly affects the other, regardless of distance.",
+        "timestamp": "2024-01-14T09:18:00Z",
+        "sender": "professor",
+        "status": "delivered",
+        "type": "text"
+      }
+    ],
+    "unreadCount": 1,
+    "isActive": false,
+    "createdAt": "2024-01-14T09:00:00Z",
+    "updatedAt": "2024-01-14T09:18:00Z"
+  },
+  {
+    "id": "chat-003",
+    "professorId": "prof-006",
+    "messages": [
+      {
+        "id": "msg-008",
+        "content": "Hi there! Ready to dive into some software engineering concepts?",
+        "timestamp": "2024-01-13T14:20:00Z",
+        "sender": "professor",
+        "status": "delivered",
+        "type": "text"
+      },
+      {
+        "id": "msg-009",
+        "content": "Hello Dr. Kim! I'm working on a project and need help with database design patterns. Any recommendations?",
+        "timestamp": "2024-01-13T14:25:00Z",
+        "sender": "user",
+        "status": "read",
+        "type": "text"
+      },
+      {
+        "id": "msg-010",
+        "content": "Absolutely! For database design, I'd recommend starting with the Repository pattern for data access, and consider using the Unit of Work pattern for transaction management. What type of application are you building?",
+        "timestamp": "2024-01-13T14:28:00Z",
+        "sender": "professor",
+        "status": "delivered",
+        "type": "text"
+      },
+      {
+        "id": "msg-011",
+        "content": "It's a web application for managing student records. I want to make sure the database design is scalable.",
+        "timestamp": "2024-01-13T14:30:00Z",
+        "sender": "user",
+        "status": "read",
+        "type": "text"
+      }
+    ],
+    "unreadCount": 0,
+    "isActive": false,
+    "createdAt": "2024-01-13T14:20:00Z",
+    "updatedAt": "2024-01-13T14:30:00Z"
+  }
+]

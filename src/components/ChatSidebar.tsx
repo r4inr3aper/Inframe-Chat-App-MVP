@@ -1,11 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search, Plus, MessageCircle, Users, MoreHorizontal, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { ChatSession } from "@/types/chat"
+import { ChatService } from "@/services/chatService"
 
 interface ChatItem {
   id: string
@@ -15,81 +17,76 @@ interface ChatItem {
   timestamp: string
   unreadCount?: number
   isOnline?: boolean
-  type: "direct" | "group"
+  type: "professor" | "group"
 }
 
 interface ChatSidebarProps {
   className?: string
   isCollapsed?: boolean
   onToggle?: () => void
+  onSelectChat?: (chatId: string) => void
+  onNewChat?: () => void
+  activeChatId?: string
 }
 
-const mockChats: ChatItem[] = [
-  {
-    id: "1",
-    name: "Sarah Chen",
-    avatar: "/avatars/sarah.jpg",
-    lastMessage: "Hey! How's the project going?",
-    timestamp: "2m",
-    unreadCount: 2,
-    isOnline: true,
-    type: "direct"
-  },
-  {
-    id: "2",
-    name: "Design Team",
-    avatar: "/avatars/design-team.jpg",
-    lastMessage: "Updated the wireframes",
-    timestamp: "15m",
-    unreadCount: 5,
-    type: "group"
-  },
-  {
-    id: "3",
-    name: "Alex Johnson",
-    avatar: "/avatars/alex.jpg",
-    lastMessage: "Thanks for the feedback!",
-    timestamp: "1h",
-    isOnline: false,
-    type: "direct"
-  },
-  {
-    id: "4",
-    name: "Product Team",
-    avatar: "/avatars/product-team.jpg",
-    lastMessage: "Meeting at 3pm today",
-    timestamp: "2h",
-    type: "group"
-  },
-  {
-    id: "5",
-    name: "Maya Rodriguez",
-    avatar: "/avatars/maya.jpg",
-    lastMessage: "Great work on the presentation",
-    timestamp: "1d",
-    isOnline: true,
-    type: "direct"
-  }
-]
-
-export default function ChatSidebar({ className = "", isCollapsed = false, onToggle }: ChatSidebarProps) {
+export default function ChatSidebar({
+  className = "",
+  isCollapsed = false,
+  onToggle,
+  onSelectChat,
+  onNewChat,
+  activeChatId
+}: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("")
-  const [activeChat, setActiveChat] = useState("1")
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>([])
 
-  const filteredChats = mockChats.filter(chat =>
+  useEffect(() => {
+    // Load chat sessions from service
+    const sessions = ChatService.getChatSessions()
+    setChatSessions(sessions)
+  }, [])
+
+  // Convert ChatSession to ChatItem format
+  const chatItems: ChatItem[] = chatSessions.map(session => ({
+    id: session.id,
+    name: session.professor.name,
+    avatar: session.professor.avatar,
+    lastMessage: session.lastMessage?.content || "No messages yet",
+    timestamp: formatTimestamp(session.updatedAt),
+    unreadCount: session.unreadCount,
+    isOnline: session.professor.isOnline,
+    type: "professor" as const
+  }))
+
+  const filteredChats = chatItems.filter(chat =>
     chat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     chat.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const directMessages = filteredChats.filter(chat => chat.type === "direct")
-  const groupChats = filteredChats.filter(chat => chat.type === "group")
+  const professorChats = filteredChats.filter(chat => chat.type === "professor")
+
+  function formatTimestamp(date: Date): string {
+    const now = new Date()
+    const diff = now.getTime() - date.getTime()
+    const minutes = Math.floor(diff / 60000)
+    const hours = Math.floor(diff / 3600000)
+    const days = Math.floor(diff / 86400000)
+
+    if (minutes < 1) return "now"
+    if (minutes < 60) return `${minutes}m`
+    if (hours < 24) return `${hours}h`
+    return `${days}d`
+  }
 
   const ChatItem = ({ chat }: { chat: ChatItem }) => (
     <button
       key={chat.id}
-      onClick={() => setActiveChat(chat.id)}
+      onClick={() => {
+        onSelectChat?.(chat.id)
+        ChatService.markAsRead(chat.id)
+      }}
       className={`w-full p-3 rounded-lg text-left transition-all duration-200 group hover:bg-sidebar-accent ${
-        activeChat === chat.id ? "bg-accent/20 border border-accent/30" : "hover:bg-sidebar-accent"
+        activeChatId === chat.id ? "bg-accent/20 border border-accent/30" : "hover:bg-sidebar-accent"
       }`}
     >
       <div className="flex items-start gap-3">
@@ -100,13 +97,13 @@ export default function ChatSidebar({ className = "", isCollapsed = false, onTog
               {chat.name.split(" ").map(n => n[0]).join("").toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          {chat.type === "direct" && (
+          {chat.type === "professor" && (
             <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-sidebar ${
-              chat.isOnline ? "bg-accent" : "bg-muted-foreground"
+              chat.isOnline ? "bg-green-500" : "bg-muted-foreground"
             }`} />
           )}
         </div>
-        
+
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
             <h4 className="font-medium text-sm text-foreground truncate">
@@ -116,12 +113,12 @@ export default function ChatSidebar({ className = "", isCollapsed = false, onTog
               {chat.timestamp}
             </span>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground truncate">
               {chat.lastMessage}
             </p>
-            {chat.unreadCount && (
+            {chat.unreadCount && chat.unreadCount > 0 && (
               <Badge className="bg-accent text-accent-foreground text-xs px-1.5 py-0.5 min-w-[18px] h-[18px] flex items-center justify-center">
                 {chat.unreadCount}
               </Badge>
@@ -145,12 +142,12 @@ export default function ChatSidebar({ className = "", isCollapsed = false, onTog
         </Button>
         
         <div className="flex flex-col gap-2">
-          {mockChats.slice(0, 5).map((chat) => (
+          {chatItems.slice(0, 5).map((chat) => (
             <button
               key={chat.id}
-              onClick={() => setActiveChat(chat.id)}
+              onClick={() => onSelectChat?.(chat.id)}
               className={`relative w-10 h-10 rounded-lg transition-colors ${
-                activeChat === chat.id ? "bg-accent/20" : "hover:bg-sidebar-accent"
+                activeChatId === chat.id ? "bg-accent/20" : "hover:bg-sidebar-accent"
               }`}
             >
               <Avatar className="h-8 w-8 mx-auto">
@@ -159,7 +156,7 @@ export default function ChatSidebar({ className = "", isCollapsed = false, onTog
                   {chat.name.split(" ").map(n => n[0]).join("").toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              {chat.unreadCount && (
+              {chat.unreadCount && chat.unreadCount > 0 && (
                 <Badge className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs px-1 py-0 min-w-[16px] h-[16px] flex items-center justify-center">
                   {chat.unreadCount}
                 </Badge>
@@ -218,43 +215,27 @@ export default function ChatSidebar({ className = "", isCollapsed = false, onTog
       {/* Quick Actions */}
       <div className="p-4 border-b border-sidebar-border">
         <div className="flex gap-2">
-          <Button className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90">
+          <Button
+            onClick={onNewChat}
+            className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90"
+          >
             <Plus className="h-4 w-4 mr-2" />
-            New Chat
-          </Button>
-          <Button variant="outline" className="flex-1">
-            <Users className="h-4 w-4 mr-2" />
-            New Group
+            Find Professor
           </Button>
         </div>
       </div>
 
       {/* Chat Lists */}
-      <div className="flex-1 overflow-y-auto">
-        {/* Direct Messages */}
-        {directMessages.length > 0 && (
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        {/* Professor Chats */}
+        {professorChats.length > 0 && (
           <div className="p-4">
             <h4 className="font-medium text-foreground mb-3 flex items-center gap-2">
               <MessageCircle className="h-4 w-4" />
-              Direct Messages
+              Professor Chats
             </h4>
             <div className="space-y-1">
-              {directMessages.map(chat => (
-                <ChatItem key={chat.id} chat={chat} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Group Chats */}
-        {groupChats.length > 0 && (
-          <div className="p-4">
-            <h4 className="font-medium text-foreground mb-3 flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Group Chats
-            </h4>
-            <div className="space-y-1">
-              {groupChats.map(chat => (
+              {professorChats.map(chat => (
                 <ChatItem key={chat.id} chat={chat} />
               ))}
             </div>
@@ -264,6 +245,18 @@ export default function ChatSidebar({ className = "", isCollapsed = false, onTog
         {filteredChats.length === 0 && searchQuery && (
           <div className="p-4 text-center">
             <p className="text-muted-foreground">No chats found</p>
+          </div>
+        )}
+
+        {chatItems.length === 0 && !searchQuery && (
+          <div className="p-4 text-center">
+            <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="font-medium text-foreground mb-2">No chats yet</h3>
+            <p className="text-muted-foreground text-sm mb-4">Start a conversation with a professor</p>
+            <Button onClick={onNewChat} size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Find Professor
+            </Button>
           </div>
         )}
       </div>

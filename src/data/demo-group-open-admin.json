@@ -1,0 +1,19 @@
+[
+  {
+    "id": "group-demo-open-admin",
+    "name": "Algorithms Lab",
+    "description": "Open chat group where students can send messages.",
+    "professorId": "prof-001",
+    "members": [
+      { "id": "student-001", "name": "Alice Johnson", "email": "alice.johnson@university.edu", "avatar": "/avatars/alice.jpg", "studentId": "STU-2024-001", "department": "Computer Science", "role": "student", "year": 2024, "batch": "2024-2028", "semester": 1 },
+      { "id": "student-003", "name": "Carol Davis", "email": "carol.davis@university.edu", "avatar": "/avatars/carol.jpg", "studentId": "STU-2024-003", "department": "Computer Science", "role": "student", "year": 2024, "batch": "2024-2028", "semester": 1 }
+    ],
+    "createdAt": "2024-03-01T10:00:00Z",
+    "updatedAt": "2024-03-01T10:00:00Z",
+    "isActive": true,
+    "maxMembers": 25,
+    "subject": "CS-ALGOLAB",
+    "profControlled": false
+  }
+]
+

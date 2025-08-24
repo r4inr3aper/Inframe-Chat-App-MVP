@@ -1,117 +1,187 @@
 "use client"
 
-import { useState } from "react"
-import { Menu, X } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import ChatSidebar from "@/components/ChatSidebar"
 import ChatInterface from "@/components/ChatInterface"
-import GroupManagement from "@/components/GroupManagement"
-import UserProfile from "@/components/UserProfile"
-import AdminDashboard from "@/components/AdminDashboard"
-import NotificationCenter from "@/components/NotificationCenter"
+import ProfessorSearch from "@/components/ProfessorSearch"
+import ProfessorGroupManagement from "@/components/ProfessorGroupManagement"
+import StudyGroupSidebar from "@/components/StudyGroupSidebar"
+import StudyGroupInterface from "@/components/StudyGroupInterface"
+import { Professor, ChatMessage, User, Group, GroupChatMessage } from "@/types/chat"
+import { ChatService } from "@/services/chatService"
+import { UserService } from "@/services/userService"
+import { GroupChatService } from "@/services/groupChatService"
+
+// Removed duplicate ProfessorGroupManagement definition.
+// The correct ProfessorGroupManagement component should be imported from "@/components/ProfessorGroupManagement".
 
 export default function HomePage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
-  const [activeSection, setActiveSection] = useState<'chat' | 'groups' | 'profile' | 'admin'>('chat')
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [currentView, setCurrentView] = useState<'search' | 'chat' | 'study-groups' | 'manage-groups'>('study-groups')
+  const [activeChatId, setActiveChatId] = useState<string | null>(null)
+  const [selectedProfessor, setSelectedProfessor] = useState<Professor | null>(null)
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
+  const [currentUser, setCurrentUser] = useState<User>(UserService.getCurrentUser())
+  const [activeGroup, setActiveGroup] = useState<Group | null>(null)
+  const [groupChatMessages, setGroupChatMessages] = useState<GroupChatMessage[]>([])
 
-  // Mock data for chat interface
-  const mockMessages = [
-    {
-      id: "1",
-      content: "Hey! How's the project coming along?",
-      timestamp: new Date(Date.now() - 30 * 60 * 1000),
-      sender: "contact" as const,
-      status: "delivered" as const,
-      type: "text" as const
-    },
-    {
-      id: "2", 
-      content: "It's going great! Just finished the wireframes. Want to take a look?",
-      timestamp: new Date(Date.now() - 25 * 60 * 1000),
-      sender: "user" as const,
-      status: "read" as const,
-      type: "text" as const
-    },
-    {
-      id: "3",
-      content: "That would be awesome! Can you share them in our group chat?",
-      timestamp: new Date(Date.now() - 20 * 60 * 1000),
-      sender: "contact" as const,
-      status: "delivered" as const,
-      type: "text" as const
-    },
-    {
-      id: "4",
-      content: "Absolutely! I'll upload them to the Design Team group right now.",
-      timestamp: new Date(Date.now() - 15 * 60 * 1000),
-      sender: "user" as const,
-      status: "read" as const,
-      type: "text" as const
+
+  const handleSelectProfessor = (professor: Professor) => {
+    // Start a new chat or get existing chat
+    const newChat = ChatService.startChatWithProfessor(professor.id)
+    setActiveChatId(newChat.id)
+    setSelectedProfessor(professor)
+    setChatMessages(newChat.messages)
+    setCurrentView('chat')
+  }
+
+  const handleSelectChat = (chatId: string) => {
+    const chatSession = ChatService.getChatSession(chatId)
+    if (chatSession) {
+      setActiveChatId(chatId)
+      setSelectedProfessor(chatSession.professor)
+      setChatMessages(chatSession.messages)
+      setCurrentView('chat')
     }
-  ]
+  }
+
+  const handleNewChat = () => {
+    setCurrentView('search')
+    setActiveChatId(null)
+    setSelectedProfessor(null)
+    setChatMessages([])
+  }
 
   const handleSendMessage = (content: string) => {
-    console.log("Sending message:", content)
+    if (!activeChatId) return
+
+    const newMessage = ChatService.sendMessage(activeChatId, content)
+    setChatMessages((prev: ChatMessage[]) => [...prev, newMessage])
+  }
+
+  const handleSelectGroup = (group: Group) => {
+    setActiveGroup(group)
+    setCurrentView('study-groups')
+
+    // Load group chat messages
+    const groupChat = GroupChatService.getGroupChatByGroupId(group.id)
+    if (groupChat) {
+      setGroupChatMessages(groupChat.messages)
+    } else {
+      setGroupChatMessages([])
+    }
+  }
+
+  const handleCreateGroup = () => {
+    setCurrentView('manage-groups')
+  }
+
+  const handleManageGroup = (group?: Group) => {
+    if (group) {
+      setActiveGroup(group)
+    }
+    setCurrentView('manage-groups')
+  }
+
+  const handleSendGroupMessage = (content: string) => {
+    if (!activeGroup) return
+
+    const newMessage = GroupChatService.sendMessageToGroup(activeGroup.id, content, currentUser)
+    setGroupChatMessages((prev: GroupChatMessage[]) => [...prev, newMessage])
+
+    // Simulate responses in group chat
+    GroupChatService.simulateIncomingMessage(activeGroup.id)
+  }
+
+
+
+  const handleSwitchRole = () => {
+    const newRole = currentUser.role === "student" ? "professor" : "student"
+    UserService.switchToRole(newRole)
+    setCurrentUser(UserService.getCurrentUser())
+
+    // Reset view when switching roles
+    if (newRole === "professor") {
+      setCurrentView('study-groups')
+    } else {
+      setCurrentView('study-groups')
+    }
+    setActiveChatId(null)
+    setSelectedProfessor(null)
+    setChatMessages([])
+    setActiveGroup(null)
+    setGroupChatMessages([])
   }
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen)
-    setIsMobileMenuOpen(false)
-  }
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen)
   }
 
   const renderMainContent = () => {
-    switch (activeSection) {
-      case 'chat':
-        return (
-          <ChatInterface
-            contactName="Sarah Chen"
-            contactAvatar="/avatars/sarah.jpg"
-            isOnline={true}
-            messages={mockMessages}
-            onSendMessage={handleSendMessage}
-            onVideoCall={() => console.log("Starting video call")}
-            onPhoneCall={() => console.log("Starting phone call")}
-            className="h-full"
-          />
-        )
-      case 'groups':
-        return (
-          <div className="p-6 h-full overflow-auto">
-            <div className="max-w-4xl mx-auto">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h1 className="text-3xl font-bold text-foreground">Group Management</h1>
-                  <p className="text-muted-foreground mt-1">Create and manage study groups</p>
-                </div>
-                <GroupManagement />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Mock group cards would go here */}
-                <div className="border border-dashed border-border rounded-lg p-8 text-center">
-                  <p className="text-muted-foreground">No groups yet. Create your first group!</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )
-      case 'profile':
-        return (
-          <div className="p-6 h-full overflow-auto">
-            <div className="max-w-4xl mx-auto">
-              <UserProfile />
-            </div>
-          </div>
-        )
-      case 'admin':
-        return <AdminDashboard />
-      default:
-        return null
+    if (currentView === 'search') {
+      return (
+        <ProfessorSearch
+          onSelectProfessor={handleSelectProfessor}
+          className="h-full"
+        />
+      )
     }
+
+    if (currentView === 'chat' && selectedProfessor) {
+      return (
+        <ChatInterface
+          contactName={selectedProfessor.name}
+          contactAvatar={selectedProfessor.avatar}
+          isOnline={selectedProfessor.isOnline}
+          messages={chatMessages.map(msg => ({
+            ...msg,
+            sender: msg.sender === "professor" ? "contact" : "user"
+          }))}
+          onSendMessage={handleSendMessage}
+          onVideoCall={() => console.log("Starting video call")}
+          onPhoneCall={() => console.log("Starting phone call")}
+          className="h-full"
+        />
+      )
+    }
+
+    if (currentView === 'study-groups' && activeGroup) {
+      return (
+        <StudyGroupInterface
+          group={activeGroup}
+          messages={groupChatMessages}
+          currentUser={currentUser}
+          onSendMessage={handleSendGroupMessage}
+          onManageGroup={() => handleManageGroup(activeGroup)}
+          className="h-full"
+        />
+      )
+    }
+
+    if (currentView === 'manage-groups' && currentUser.role === 'professor') {
+      return (
+        <ProfessorGroupManagement
+          professorId={currentUser.professorId || currentUser.id}
+          onOpenGroupChat={handleSelectGroup}
+          className="h-full"
+        />
+      )
+    }
+
+    return (
+      <div className="h-full flex items-center justify-center">
+        <p className="text-muted-foreground">
+          {currentView === 'study-groups'
+            ? 'Select a study group from the sidebar to start chatting'
+            : currentView === 'manage-groups'
+            ? 'Manage your study groups and add students'
+            : 'Search for professors to start a conversation'
+          }
+        </p>
+      </div>
+    )
   }
 
   return (
@@ -121,84 +191,33 @@ export default function HomePage() {
         <Button
           variant="outline"
           size="icon"
-          onClick={toggleMobileMenu}
+          onClick={toggleSidebar}
           className="bg-background border-border"
         >
-          {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          <Menu className="h-4 w-4" />
         </Button>
       </div>
 
-      {/* Mobile Navigation Overlay */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 bg-background/80 backdrop-blur-sm">
-          <div className="fixed left-0 top-0 h-full w-80 bg-sidebar border-r border-sidebar-border">
-            <div className="p-4 border-b border-sidebar-border">
-              <div className="flex items-center justify-between">
-                <h2 className="font-heading font-semibold text-lg">Inframes Chat</h2>
-                <div className="flex items-center gap-2">
-                  <NotificationCenter />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={toggleMobileMenu}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-            <div className="p-4 space-y-2">
-              <Button
-                variant={activeSection === 'chat' ? 'default' : 'ghost'}
-                className="w-full justify-start"
-                onClick={() => {
-                  setActiveSection('chat')
-                  setIsMobileMenuOpen(false)
-                }}
-              >
-                Chat
-              </Button>
-              <Button
-                variant={activeSection === 'groups' ? 'default' : 'ghost'}
-                className="w-full justify-start"
-                onClick={() => {
-                  setActiveSection('groups')
-                  setIsMobileMenuOpen(false)
-                }}
-              >
-                Groups
-              </Button>
-              <Button
-                variant={activeSection === 'profile' ? 'default' : 'ghost'}
-                className="w-full justify-start"
-                onClick={() => {
-                  setActiveSection('profile')
-                  setIsMobileMenuOpen(false)
-                }}
-              >
-                Profile
-              </Button>
-              <Button
-                variant={activeSection === 'admin' ? 'default' : 'ghost'}
-                className="w-full justify-start"
-                onClick={() => {
-                  setActiveSection('admin')
-                  setIsMobileMenuOpen(false)
-                }}
-              >
-                Admin
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:block">
-        {activeSection === 'chat' && (
+      {/* Sidebar */}
+      <div className={`${isSidebarOpen ? 'block' : 'hidden'} lg:block`}>
+        {currentView === 'study-groups' ? (
+          <StudyGroupSidebar
+            isCollapsed={!isSidebarOpen}
+            onToggle={toggleSidebar}
+            onSelectGroup={handleSelectGroup}
+            onCreateGroup={handleCreateGroup}
+            onManageGroup={handleManageGroup}
+            activeGroupId={activeGroup?.id}
+            currentUser={currentUser}
+            className="transition-all duration-300"
+          />
+        ) : (
           <ChatSidebar
             isCollapsed={!isSidebarOpen}
             onToggle={toggleSidebar}
+            onSelectChat={handleSelectChat}
+            onNewChat={handleNewChat}
+            activeChatId={activeChatId || undefined}
             className="transition-all duration-300"
           />
         )}
@@ -206,8 +225,8 @@ export default function HomePage() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Navigation Bar - Desktop Only */}
-        <div className="hidden lg:flex items-center justify-between p-4 border-b border-border bg-card">
+        {/* Top Navigation Bar */}
+        <div className="flex items-center justify-between p-4 border-b border-border bg-card">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
@@ -215,41 +234,61 @@ export default function HomePage() {
               </div>
               <h1 className="font-heading font-bold text-xl">Inframes Chat</h1>
             </div>
-            
-            <div className="flex gap-2 ml-8">
+
+            {/* Navigation Tabs */}
+            <div className="flex gap-2">
               <Button
-                variant={activeSection === 'chat' ? 'default' : 'ghost'}
+                variant={currentView === 'search' ? 'default' : 'ghost'}
                 size="sm"
-                onClick={() => setActiveSection('chat')}
+                onClick={() => setCurrentView('search')}
               >
-                Chat
+                Find Professors
               </Button>
               <Button
-                variant={activeSection === 'groups' ? 'default' : 'ghost'}
+                variant={currentView === 'study-groups' ? 'default' : 'ghost'}
                 size="sm"
-                onClick={() => setActiveSection('groups')}
+                onClick={() => setCurrentView('study-groups')}
               >
-                Groups
+                Study Groups
               </Button>
-              <Button
-                variant={activeSection === 'profile' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setActiveSection('profile')}
-              >
-                Profile
-              </Button>
-              <Button
-                variant={activeSection === 'admin' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setActiveSection('admin')}
-              >
-                Admin
-              </Button>
+              {currentUser.role === 'professor' && (
+                <Button
+                  variant={currentView === 'manage-groups' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setCurrentView('manage-groups')}
+                >
+                  Manage Groups
+                </Button>
+              )}
+              {selectedProfessor && (
+                <Button
+                  variant={currentView === 'chat' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setCurrentView('chat')}
+                >
+                  Chat
+                </Button>
+              )}
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
-            <NotificationCenter />
+            {/* Role Switcher for Demo */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSwitchRole}
+              className="text-xs"
+            >
+              Switch to {currentUser.role === 'student' ? 'Professor' : 'Student'}
+            </Button>
+
+            {/* User Info */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                {currentUser.name} ({currentUser.role})
+              </span>
+            </div>
           </div>
         </div>
 

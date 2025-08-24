@@ -1,0 +1,37 @@
+[
+  {
+    "id": "group-demo-broadcast",
+    "name": "Exam Announcements",
+    "description": "Professor-only group. Students can only view messages.",
+    "professorId": "prof-001",
+    "members": [
+      { "id": "student-001", "name": "Alice Johnson", "email": "alice.johnson@university.edu", "department": "Computer Science", "role": "student", "year": 2024, "batch": "2024-2028", "semester": 1 },
+      { "id": "student-002", "name": "Bob Smith", "email": "bob.smith@university.edu", "department": "Computer Science", "role": "student", "year": 2024, "batch": "2024-2028", "semester": 1 }
+    ],
+    "createdAt": "2024-02-01T10:00:00Z",
+    "updatedAt": "2024-02-01T10:00:00Z",
+    "isActive": true,
+    "maxMembers": 100,
+    "subject": "GEN-NOTICES",
+    "profControlled": true
+  },
+  {
+    "id": "group-demo-open",
+    "name": "Project Collaboration",
+    "description": "Open group where all members can text. Professor can control who can send.",
+    "professorId": "prof-001",
+    "members": [
+      { "id": "student-003", "name": "Carol Davis", "email": "carol.davis@university.edu", "department": "Computer Science", "role": "student", "year": 2024, "batch": "2024-2028", "semester": 1 },
+      { "id": "student-004", "name": "David Lee", "email": "david.lee@university.edu", "department": "Computer Science", "role": "student", "year": 2024, "batch": "2024-2028", "semester": 1 }
+    ],
+    "createdAt": "2024-02-02T10:00:00Z",
+    "updatedAt": "2024-02-02T10:00:00Z",
+    "isActive": true,
+    "maxMembers": 20,
+    "subject": "CS-PROJ",
+    "chatMode": "open",
+    "profControlled": true,
+    "allowedSenderIds": ["student-003", "student-004"]
+  }
+]
+

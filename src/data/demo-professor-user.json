@@ -1,0 +1,9 @@
+{
+  "id": "prof-001",
+  "name": "Dr. Sarah Mitchell",
+  "email": "s.mitchell@university.edu",
+  "avatar": "/avatars/prof-sarah.jpg",
+  "professorId": "prof-001",
+  "department": "Computer Science",
+  "role": "professor"
+}

@@ -1,0 +1,9 @@
+{
+  "id": "user-001",
+  "name": "John Student",
+  "email": "john.student@university.edu",
+  "avatar": "/avatars/user.jpg",
+  "studentId": "STU-2024-001",
+  "department": "Computer Science",
+  "role": "student"
+}

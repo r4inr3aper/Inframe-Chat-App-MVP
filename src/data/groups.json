@@ -1,0 +1,155 @@
+
+[
+  {
+    "id": "group-001",
+    "name": "AI Study Group",
+    "description": "A study group focused on artificial intelligence and machine learning concepts",
+    "professorId": "prof-001",
+    "members": [
+      {
+        "id": "student-001",
+        "name": "Alice Johnson",
+        "email": "alice.johnson@university.edu",
+        "avatar": "/avatars/alice.jpg",
+        "studentId": "STU-2024-001",
+        "department": "Computer Science",
+        "role": "student",
+        "year": 2024,
+        "batch": "2024-2028",
+        "semester": 1
+      },
+      {
+        "id": "student-002",
+        "name": "Bob Smith",
+        "email": "bob.smith@university.edu",
+        "avatar": "/avatars/bob.jpg",
+        "studentId": "STU-2024-002",
+        "department": "Computer Science",
+        "role": "student",
+        "year": 2024,
+        "batch": "2024-2028",
+        "semester": 1
+      },
+      {
+        "id": "student-003",
+        "name": "Carol Davis",
+        "email": "carol.davis@university.edu",
+        "avatar": "/avatars/carol.jpg",
+        "studentId": "STU-2024-003",
+        "department": "Computer Science",
+        "role": "student",
+        "year": 2024,
+        "batch": "2024-2028",
+        "semester": 1
+      }
+    ],
+    "createdAt": "2024-01-10T10:00:00Z",
+    "updatedAt": "2024-01-15T14:30:00Z",
+    "isActive": true,
+    "maxMembers": 15,
+    "subject": "CS401",
+    "profControlled": false
+  },
+  {
+    "id": "group-002",
+    "name": "Quantum Physics Discussion",
+    "description": "Advanced discussion group for quantum physics concepts and applications",
+    "professorId": "prof-003",
+    "members": [
+      {
+        "id": "student-005",
+        "name": "Emma Brown",
+        "email": "emma.brown@university.edu",
+        "avatar": "/avatars/emma.jpg",
+        "studentId": "STU-2024-005",
+        "department": "Physics",
+        "role": "student",
+        "year": 2024,
+        "batch": "2024-2028",
+        "semester": 1
+      }
+    ],
+    "createdAt": "2024-01-12T09:00:00Z",
+    "updatedAt": "2024-01-16T11:20:00Z",
+    "isActive": true,
+    "maxMembers": 10,
+    "subject": "QUANTUM401",
+    "profControlled": true
+  },
+  {
+    "id": "group-003",
+    "name": "Software Engineering Project Team",
+    "description": "Collaborative project team for software engineering coursework",
+    "professorId": "prof-006",
+    "members": [
+      {
+        "id": "student-001",
+        "name": "Alice Johnson",
+        "email": "alice.johnson@university.edu",
+        "avatar": "/avatars/alice.jpg",
+        "studentId": "STU-2024-001",
+        "department": "Computer Science",
+        "role": "student",
+        "year": 2024,
+        "batch": "2024-2028",
+        "semester": 1
+      },
+      {
+        "id": "student-008",
+        "name": "Henry Taylor",
+        "email": "henry.taylor@university.edu",
+        "avatar": "/avatars/henry.jpg",
+        "studentId": "STU-2024-008",
+        "department": "Engineering",
+        "role": "student",
+        "year": 2024,
+        "batch": "2024-2028",
+        "semester": 1
+      }
+    ],
+    "createdAt": "2024-01-08T15:00:00Z",
+    "updatedAt": "2024-01-14T16:45:00Z",
+    "isActive": true,
+    "maxMembers": 8,
+    "subject": "SE201",
+    "profControlled": false
+  },
+  {
+    "id": "group-004",
+    "name": "Research Methodology Announcements",
+    "description": "Important announcements and guidelines for research methodology course",
+    "professorId": "prof-002",
+    "members": [
+      {
+        "id": "student-002",
+        "name": "Bob Smith",
+        "email": "bob.smith@university.edu",
+        "avatar": "/avatars/bob.jpg",
+        "studentId": "STU-2024-002",
+        "department": "Computer Science",
+        "role": "student",
+        "year": 2024,
+        "batch": "2024-2028",
+        "semester": 1
+      },
+      {
+        "id": "student-004",
+        "name": "David Wilson",
+        "email": "david.wilson@university.edu",
+        "avatar": "/avatars/david.jpg",
+        "studentId": "STU-2024-004",
+        "department": "Computer Science",
+        "role": "student",
+        "year": 2024,
+        "batch": "2024-2028",
+        "semester": 1
+      }
+    ],
+    "createdAt": "2024-01-20T11:00:00Z",
+    "updatedAt": "2024-01-22T13:15:00Z",
+    "isActive": true,
+    "maxMembers": 25,
+    "subject": "RESEARCH301",
+    "profControlled": true
+  }
+]

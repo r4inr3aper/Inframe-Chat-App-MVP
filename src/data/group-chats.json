@@ -1,0 +1,194 @@
+[
+  {
+    "id": "gc-001",
+    "groupId": "group-001",
+    "messages": [
+      {
+        "id": "gcmsg-001",
+        "content": "Welcome to the AI Study Group! Let's start by discussing today's lecture on neural networks.",
+        "timestamp": "2024-01-15T09:00:00Z",
+        "senderId": "prof-001",
+        "senderName": "Dr. Sarah Mitchell",
+        "senderRole": "professor",
+        "senderAvatar": "/avatars/prof-sarah.jpg",
+        "type": "text"
+      },
+      {
+        "id": "gcmsg-002",
+        "content": "Hi everyone! I'm excited to be part of this group. I have some questions about backpropagation.",
+        "timestamp": "2024-01-15T09:05:00Z",
+        "senderId": "student-001",
+        "senderName": "Alice Johnson",
+        "senderRole": "student",
+        "senderAvatar": "/avatars/alice.jpg",
+        "type": "text"
+      },
+      {
+        "id": "gcmsg-003",
+        "content": "Great question Alice! Let's break down backpropagation step by step. It's essentially the chain rule applied to neural networks.",
+        "timestamp": "2024-01-15T09:07:00Z",
+        "senderId": "prof-001",
+        "senderName": "Dr. Sarah Mitchell",
+        "senderRole": "professor",
+        "senderAvatar": "/avatars/prof-sarah.jpg",
+        "type": "text"
+      },
+      {
+        "id": "gcmsg-004",
+        "content": "I found this helpful resource on gradient descent: https://example.com/gradient-descent",
+        "timestamp": "2024-01-15T09:10:00Z",
+        "senderId": "student-002",
+        "senderName": "Bob Smith",
+        "senderRole": "student",
+        "senderAvatar": "/avatars/bob.jpg",
+        "type": "text"
+      },
+      {
+        "id": "gcmsg-005",
+        "content": "Thanks Bob! That's exactly what we need. Everyone should review this before our next session.",
+        "timestamp": "2024-01-15T09:12:00Z",
+        "senderId": "prof-001",
+        "senderName": "Dr. Sarah Mitchell",
+        "senderRole": "professor",
+        "senderAvatar": "/avatars/prof-sarah.jpg",
+        "type": "text"
+      }
+    ],
+    "lastActivity": "2024-01-15T09:12:00Z",
+    "isActive": true
+  },
+  {
+    "id": "gc-002",
+    "groupId": "group-002",
+    "messages": [
+      {
+        "id": "gcmsg-006",
+        "content": "Welcome to our Quantum Physics Discussion group! Today we'll explore quantum entanglement.",
+        "timestamp": "2024-01-14T10:00:00Z",
+        "senderId": "prof-003",
+        "senderName": "Dr. Emily Rodriguez",
+        "senderRole": "professor",
+        "senderAvatar": "/avatars/prof-emily.jpg",
+        "type": "text"
+      },
+      {
+        "id": "gcmsg-007",
+        "content": "Professor, could you explain how quantum entanglement relates to Bell's theorem?",
+        "timestamp": "2024-01-14T10:15:00Z",
+        "senderId": "student-005",
+        "senderName": "Emma Brown",
+        "senderRole": "student",
+        "senderAvatar": "/avatars/emma.jpg",
+        "type": "text"
+      },
+      {
+        "id": "gcmsg-008",
+        "content": "Excellent question Emma! Bell's theorem shows that no physical theory based on local hidden variables can reproduce all the predictions of quantum mechanics.",
+        "timestamp": "2024-01-14T10:18:00Z",
+        "senderId": "prof-003",
+        "senderName": "Dr. Emily Rodriguez",
+        "senderRole": "professor",
+        "senderAvatar": "/avatars/prof-emily.jpg",
+        "type": "text"
+      }
+    ],
+    "lastActivity": "2024-01-14T10:18:00Z",
+    "isActive": true
+  },
+  {
+    "id": "gc-003",
+    "groupId": "group-003",
+    "messages": [
+      {
+        "id": "gcmsg-009",
+        "content": "Welcome to the Software Engineering Project Team! Let's discuss our upcoming project milestones.",
+        "timestamp": "2024-01-13T14:00:00Z",
+        "senderId": "prof-006",
+        "senderName": "Dr. Robert Kim",
+        "senderRole": "professor",
+        "senderAvatar": "/avatars/prof-robert.jpg",
+        "type": "text"
+      },
+      {
+        "id": "gcmsg-010",
+        "content": "I've been working on the database schema. Should I share it here for review?",
+        "timestamp": "2024-01-13T14:30:00Z",
+        "senderId": "student-001",
+        "senderName": "Alice Johnson",
+        "senderRole": "student",
+        "senderAvatar": "/avatars/alice.jpg",
+        "type": "text"
+      },
+      {
+        "id": "gcmsg-011",
+        "content": "Absolutely Alice! Please share it. We can review it together and provide feedback.",
+        "timestamp": "2024-01-13T14:32:00Z",
+        "senderId": "prof-006",
+        "senderName": "Dr. Robert Kim",
+        "senderRole": "professor",
+        "senderAvatar": "/avatars/prof-robert.jpg",
+        "type": "text"
+      },
+      {
+        "id": "gcmsg-012",
+        "content": "I can help with the API design once the database schema is finalized.",
+        "timestamp": "2024-01-13T14:35:00Z",
+        "senderId": "student-008",
+        "senderName": "Henry Taylor",
+        "senderRole": "student",
+        "senderAvatar": "/avatars/henry.jpg",
+        "type": "text"
+      }
+    ],
+    "lastActivity": "2024-01-13T14:35:00Z",
+    "isActive": true
+  },
+  {
+    "id": "gc-004",
+    "groupId": "group-004",
+    "messages": [
+      {
+        "id": "gcmsg-research-001",
+        "content": "Welcome to Research Methodology! This group is for important announcements and course updates only.",
+        "timestamp": "2024-01-20T11:15:00Z",
+        "senderId": "prof-002",
+        "senderName": "Dr. Michael Chen",
+        "senderRole": "professor",
+        "senderAvatar": "/avatars/prof-michael.jpg",
+        "type": "text"
+      },
+      {
+        "id": "gcmsg-research-002",
+        "content": "Please review the research proposal guidelines I've uploaded to the course portal. Your first draft is due next week.",
+        "timestamp": "2024-01-20T14:30:00Z",
+        "senderId": "prof-002",
+        "senderName": "Dr. Michael Chen",
+        "senderRole": "professor",
+        "senderAvatar": "/avatars/prof-michael.jpg",
+        "type": "text"
+      },
+      {
+        "id": "gcmsg-research-003",
+        "content": "Office hours update: I'll be available Monday 3-5 PM and Wednesday 2-4 PM for research consultations.",
+        "timestamp": "2024-01-22T09:00:00Z",
+        "senderId": "prof-002",
+        "senderName": "Dr. Michael Chen",
+        "senderRole": "professor",
+        "senderAvatar": "/avatars/prof-michael.jpg",
+        "type": "text"
+      },
+      {
+        "id": "gcmsg-research-004",
+        "content": "Reminder: Literature review workshop is scheduled for this Friday at 2 PM in Room 301. Attendance is mandatory.",
+        "timestamp": "2024-01-22T13:15:00Z",
+        "senderId": "prof-002",
+        "senderName": "Dr. Michael Chen",
+        "senderRole": "professor",
+        "senderAvatar": "/avatars/prof-michael.jpg",
+        "type": "text"
+      }
+    ],
+    "lastActivity": "2024-01-22T13:15:00Z",
+    "isActive": true
+  }
+]
