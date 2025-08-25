@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, MessageCircle, Star, Clock, User, Filter } from "lucide-react"
+import { Search, MessageCircle, Star, Clock, User, Filter, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -9,7 +9,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Professor } from "@/types/chat"
-import professorsData from "@/data/professors.json"
+import { ProfessorService } from "@/services/professorService"
+import { useAuth } from "@/hooks/useAuth"
 
 interface ProfessorSearchProps {
   onSelectProfessor: (professor: Professor) => void
@@ -17,10 +18,44 @@ interface ProfessorSearchProps {
 }
 
 export default function ProfessorSearch({ onSelectProfessor, className = "" }: ProfessorSearchProps) {
-  const [professors] = useState<Professor[]>(professorsData as Professor[])
+  const { accessToken, isAuthenticated, isLoading: authLoading } = useAuth()
+  const [professors, setProfessors] = useState<Professor[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedDepartment, setSelectedDepartment] = useState<string>("all")
-  const [filteredProfessors, setFilteredProfessors] = useState<Professor[]>(professors)
+  const [filteredProfessors, setFilteredProfessors] = useState<Professor[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Load professors from backend on component mount
+  useEffect(() => {
+    const loadProfessors = async () => {
+      // Wait for auth to finish loading
+      if (authLoading) {
+        return
+      }
+
+      if (!isAuthenticated || !accessToken) {
+        setError('Please log in to view professors.')
+        setIsLoading(false)
+        return
+      }
+
+      try {
+        setIsLoading(true)
+        setError(null)
+        const data = await ProfessorService.getAllProfessors(accessToken)
+        setProfessors(data)
+        setFilteredProfessors(data)
+      } catch (err: any) {
+        console.error('Failed to load professors:', err)
+        setError(err.message || 'Failed to load professors. Please try again.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadProfessors()
+  }, [isAuthenticated, accessToken, authLoading])
 
   // Get unique departments
   const departments = Array.from(new Set(professors.map(prof => prof.department)))
@@ -58,7 +93,37 @@ export default function ProfessorSearch({ onSelectProfessor, className = "" }: P
     <div className={`h-full flex flex-col ${className}`}>
       {/* Header */}
       <div className="p-6 border-b border-border">
-        <h1 className="text-2xl font-bold text-foreground mb-4">Find a Professor</h1>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold text-foreground">Find a Professor</h1>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              if (!isAuthenticated || !accessToken) {
+                setError('Please log in to refresh professors.')
+                return
+              }
+
+              try {
+                setIsLoading(true)
+                setError(null)
+                ProfessorService.clearCache() // Clear cache to force fresh data
+                const data = await ProfessorService.getAllProfessors(accessToken)
+                setProfessors(data)
+                setFilteredProfessors(data)
+              } catch (err: any) {
+                setError(err.message || 'Failed to refresh professors')
+              } finally {
+                setIsLoading(false)
+              }
+            }}
+            disabled={isLoading}
+            className="gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
         
         {/* Search and Filter */}
         <div className="space-y-4">
@@ -91,7 +156,55 @@ export default function ProfessorSearch({ onSelectProfessor, className = "" }: P
 
       {/* Results */}
       <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
-        {filteredProfessors.length === 0 ? (
+        {(isLoading || authLoading) ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <h3 className="text-lg font-medium text-foreground mb-2">
+              {authLoading ? 'Checking authentication...' : 'Loading professors...'}
+            </h3>
+            <p className="text-muted-foreground">
+              {authLoading ? 'Please wait while we verify your login' : 'Please wait while we fetch the latest data'}
+            </p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <div className="h-12 w-12 text-destructive mx-auto mb-4">⚠️</div>
+            <h3 className="text-lg font-medium text-foreground mb-2">Error loading professors</h3>
+            <p className="text-muted-foreground mb-4 max-w-md mx-auto">{error}</p>
+            <div className="space-y-2">
+              <Button
+                onClick={async () => {
+                  if (!isAuthenticated || !accessToken) {
+                    setError('Please log in to load professors.')
+                    return
+                  }
+
+                  try {
+                    setIsLoading(true)
+                    setError(null)
+                    const data = await ProfessorService.getAllProfessors(accessToken)
+                    setProfessors(data)
+                    setFilteredProfessors(data)
+                  } catch (err: any) {
+                    setError(err.message || 'Failed to load professors')
+                  } finally {
+                    setIsLoading(false)
+                  }
+                }}
+                variant="outline"
+                size="sm"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Retrying...' : 'Try Again'}
+              </Button>
+              {error.includes('Authentication') && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Please log in to view professors. If you're already logged in, try refreshing the page.
+                </p>
+              )}
+            </div>
+          </div>
+        ) : filteredProfessors.length === 0 ? (
           <div className="text-center py-12">
             <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-medium text-foreground mb-2">No professors found</h3>

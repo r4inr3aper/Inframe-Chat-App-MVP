@@ -1,12 +1,10 @@
 import { Group, User, Professor } from "@/types/chat"
 import groupsData from "@/data/groups.json"
-import demoGroups from "@/data/demo-groups.json"
-import demoOpenAdmin from "@/data/demo-group-open-admin.json"
 import studentsData from "@/data/students.json"
 import professorsData from "@/data/professors.json"
 
 export class GroupService {
-  private static groups: any[] = [...(groupsData as any[]), ...(demoGroups as any[]), ...(demoOpenAdmin as any[])]
+  private static groups: any[] = [...(groupsData as any[])]
   private static students: User[] = studentsData as User[]
   private static professors: Professor[] = professorsData as Professor[]
 

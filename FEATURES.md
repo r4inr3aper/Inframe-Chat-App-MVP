@@ -1,4 +1,4 @@
-# Inframes Chat App Features
+# Inframe Chat App Features
 
 ## Overview
 A comprehensive chat application that allows students to connect with professors and enables professors to manage study groups.
@@ -125,11 +125,12 @@ Manages group operations for professors:
 - Search students
 - Filter by department
 
-### UserService
-Manages user authentication and role switching:
-- Get current user information
-- Switch between student/professor roles (for demo)
-- Role-based access control
+### Authentication System
+Manages user authentication with NextAuth.js:
+- Role-based login (student/teacher/admin)
+- JWT token management
+- Session persistence
+- Backend integration
 
 ## Components
 
@@ -168,10 +169,11 @@ Built with shadcn/ui components for consistent design:
 - Member management (add/remove)
 - Group settings and configuration
 
-## Demo Features
-- Role switching button to test both student and professor views
-- Simulated professor responses in chats
-- Pre-populated sample data for testing
+## Authentication Features
+- Role-based login (student/professor/admin)
+- NextAuth.js integration with backend
+- JWT token management
+- Session persistence
 
 ## Backend Integration Ready
 All data operations use service classes that can easily be replaced with actual API calls:

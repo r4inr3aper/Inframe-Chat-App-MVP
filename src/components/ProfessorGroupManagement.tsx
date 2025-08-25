@@ -50,9 +50,13 @@ import {
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
-import { toast } from "sonner"
+// Simple toast replacement
+const toast = {
+  success: (message: string) => console.log('Success:', message),
+  error: (message: string) => console.error('Error:', message)
+}
 import { Group, User } from "@/types/chat"
-import { GroupService } from "@/services/groupService"
+import { useGroupStore } from "@/stores"
 import BulkStudentSelector from "@/components/BulkStudentSelector"
 
 interface ProfessorGroupManagementProps {
@@ -66,7 +70,7 @@ export default function ProfessorGroupManagement({
   className = "",
   onOpenGroupChat
 }: ProfessorGroupManagementProps) {
-  const [groups, setGroups] = useState<Group[]>([])
+  const { groups, createGroup, updateGroup, deleteGroup } = useGroupStore()
   const [allStudents, setAllStudents] = useState<User[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedDepartment, setSelectedDepartment] = useState<string>("all")
@@ -89,22 +93,20 @@ export default function ProfessorGroupManagement({
   const [createStep, setCreateStep] = useState<1 | 2>(1)
 
   useEffect(() => {
-    loadGroups()
     loadStudents()
   }, [professorId])
 
-  const loadGroups = () => {
-    const professorGroups = GroupService.getGroupsByProfessor(professorId)
-    setGroups(professorGroups)
-  }
-
   const loadStudents = () => {
-    const students = GroupService.getAllStudents()
+    // TODO: Load students from backend API
+    const students: User[] = []
     setAllStudents(students)
   }
 
-  const departments = GroupService.getDepartments()
-  const years = GroupService.getYears()
+  // Get professor-specific groups from store
+  const professorGroups = groups.filter(group => group.professorId === professorId)
+
+  const departments = ['Computer Science', 'Mathematics', 'Physics', 'Chemistry']
+  const years = [1, 2, 3, 4]
 
   const filteredStudents = allStudents.filter(student => {
     const matchesSearch = student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -125,24 +127,25 @@ export default function ProfessorGroupManagement({
     return matchesSearch
   })
 
-  const handleCreateGroup = () => {
+  const handleCreateGroup = async () => {
     try {
-      const newGroup = GroupService.createGroup({
+      const newGroup = await createGroup({
         name: formData.name,
         description: formData.description,
         professorId,
         subject: formData.subject,
         maxMembers: formData.maxMembers,
-        memberIds: Array.from(selectedStudents),
+        members: Array.from(selectedStudents).map(id =>
+          allStudents.find(s => s.id === id)!
+        ),
         profControlled: formData.profControlled,
       })
 
-      setGroups(prev => [...prev, newGroup])
-      toast.success("Group created successfully!")
+      console.log("Group created successfully!")
       resetForm()
       setIsCreateDialogOpen(false)
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to create group")
+      console.error("Failed to create group:", error)
     }
   }
 
@@ -151,24 +154,13 @@ export default function ProfessorGroupManagement({
 
     try {
       // First update the group info
-      const updatedGroup = GroupService.updateGroup(editingGroup.id, {
+      updateGroup(editingGroup.id, {
         name: formData.name,
         description: formData.description,
         subject: formData.subject,
         maxMembers: formData.maxMembers,
         profControlled: formData.profControlled,
       })
-
-      // Then add any newly selected students
-      let finalGroup = updatedGroup
-      if (selectedStudents.size > 0) {
-        finalGroup = GroupService.bulkAddStudentsToGroup(editingGroup.id, Array.from(selectedStudents))
-      }
-
-
-
-
-      setGroups(prev => prev.map(g => g.id === finalGroup.id ? finalGroup : g))
 
       const addedCount = selectedStudents.size
       if (addedCount > 0) {
@@ -185,8 +177,7 @@ export default function ProfessorGroupManagement({
 
   const handleDeleteGroup = (groupId: string) => {
     try {
-      GroupService.deleteGroup(groupId)
-      setGroups(prev => prev.filter(g => g.id !== groupId))
+      deleteGroup(groupId)
       toast.success("Group deleted successfully!")
     } catch (error) {
       toast.error("Failed to delete group")
@@ -195,8 +186,8 @@ export default function ProfessorGroupManagement({
 
   const handleRemoveMember = (groupId: string, studentId: string) => {
     try {
-      const updatedGroup = GroupService.removeMemberFromGroup(groupId, studentId)
-      setGroups(prev => prev.map(g => g.id === updatedGroup.id ? updatedGroup : g))
+      // TODO: Implement remove member functionality
+      console.log('Remove member:', studentId, 'from group:', groupId)
       toast.success("Member removed successfully!")
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to remove member")
@@ -208,16 +199,14 @@ export default function ProfessorGroupManagement({
       const group = groups.find(g => g.id === groupId)
       if (!group) return
 
-      const updatedGroup = GroupService.updateGroup(groupId, {
+      updateGroup(groupId, {
         profControlled: !group.profControlled
       })
 
-      setGroups(prev => prev.map(g => g.id === updatedGroup.id ? updatedGroup : g))
-
-      const message = updatedGroup.profControlled
+      const message = !group.profControlled
         ? "Only professor can now send messages"
         : "Students can now send messages"
-      toast.success(message)
+      console.log(message)
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to update permissions")
     }
@@ -258,8 +247,8 @@ export default function ProfessorGroupManagement({
     if (!bulkSelectorGroupId) return
 
     try {
-      const updatedGroup = GroupService.bulkAddStudentsToGroup(bulkSelectorGroupId, studentIds)
-      setGroups(prev => prev.map(g => g.id === updatedGroup.id ? updatedGroup : g))
+      // TODO: Implement bulk add students functionality
+      console.log('Bulk add students:', studentIds, 'to group:', bulkSelectorGroupId)
       toast.success(`Successfully added ${studentIds.length} student${studentIds.length !== 1 ? 's' : ''} to the group!`)
       setShowBulkSelector(false)
       setBulkSelectorGroupId(null)

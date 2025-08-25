@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Menu } from "lucide-react"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { Menu, LogOut, User as UserIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import ChatSidebar from "@/components/ChatSidebar"
 import ChatInterface from "@/components/ChatInterface"
@@ -10,27 +11,74 @@ import ProfessorGroupManagement from "@/components/ProfessorGroupManagement"
 import StudyGroupSidebar from "@/components/StudyGroupSidebar"
 import StudyGroupInterface from "@/components/StudyGroupInterface"
 import { Professor, ChatMessage, User, Group, GroupChatMessage } from "@/types/chat"
-import { ChatService } from "@/services/chatService"
-import { UserService } from "@/services/userService"
-import { GroupChatService } from "@/services/groupChatService"
-
-// Removed duplicate ProfessorGroupManagement definition.
-// The correct ProfessorGroupManagement component should be imported from "@/components/ProfessorGroupManagement".
+import { useUI, useChatStore, useGroupStore, useNotifications } from "@/stores"
+import { useAuth } from "@/hooks/useAuth"
 
 export default function HomePage() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
-  const [currentView, setCurrentView] = useState<'search' | 'chat' | 'study-groups' | 'manage-groups'>('study-groups')
-  const [activeChatId, setActiveChatId] = useState<string | null>(null)
-  const [selectedProfessor, setSelectedProfessor] = useState<Professor | null>(null)
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
-  const [currentUser, setCurrentUser] = useState<User>(UserService.getCurrentUser())
-  const [activeGroup, setActiveGroup] = useState<Group | null>(null)
-  const [groupChatMessages, setGroupChatMessages] = useState<GroupChatMessage[]>([])
+  const router = useRouter()
+
+  // Auth and stores
+  const { isAuthenticated, user: currentUser, logout, isLoading: authLoading } = useAuth()
+
+
+
+  // Debug auth state (removed to reduce console noise)
+  // console.log('Auth state:', { isAuthenticated, currentUser: currentUser?.name })
+  const {
+    isSidebarOpen,
+    currentView,
+    isPageLoading,
+    toggleSidebar,
+    setCurrentView,
+    setPageLoading
+  } = useUI()
+  const {
+    activeChatId,
+    selectedProfessor,
+    chatMessages,
+    setActiveChatId,
+    setSelectedProfessor,
+    setChatMessages,
+    startChatWithProfessor,
+    sendMessage
+  } = useChatStore()
+  const {
+    activeGroup,
+    groupChatMessages,
+    setActiveGroup,
+    sendGroupMessage
+  } = useGroupStore()
+  const { showSuccess, showError } = useNotifications()
+
+  // Check authentication status on component mount
+  useEffect(() => {
+    // Don't redirect if auth is still loading
+    if (authLoading) {
+      setPageLoading(true)
+      return
+    }
+
+    // If not authenticated and not loading, redirect to auth
+    if (!isAuthenticated || !currentUser) {
+      router.push('/auth')
+      setPageLoading(false)
+      return
+    }
+
+    // Set default view based on user role
+    if (currentUser.role === 'student') {
+      setCurrentView('search') // Students start with professor search
+    } else if (currentUser.role === 'professor') {
+      setCurrentView('manage-groups') // Professors start with group management
+    }
+
+    setPageLoading(false)
+  }, [isAuthenticated, currentUser, authLoading, router, setCurrentView, setPageLoading])
 
 
   const handleSelectProfessor = (professor: Professor) => {
-    // Start a new chat or get existing chat
-    const newChat = ChatService.startChatWithProfessor(professor.id)
+    // Start a new chat or get existing chat using Zustand store
+    const newChat = startChatWithProfessor(professor)
     setActiveChatId(newChat.id)
     setSelectedProfessor(professor)
     setChatMessages(newChat.messages)
@@ -38,7 +86,7 @@ export default function HomePage() {
   }
 
   const handleSelectChat = (chatId: string) => {
-    const chatSession = ChatService.getChatSession(chatId)
+    const chatSession = useChatStore.getState().getChatSession(chatId)
     if (chatSession) {
       setActiveChatId(chatId)
       setSelectedProfessor(chatSession.professor)
@@ -54,24 +102,18 @@ export default function HomePage() {
     setChatMessages([])
   }
 
-  const handleSendMessage = (content: string) => {
-    if (!activeChatId) return
-
-    const newMessage = ChatService.sendMessage(activeChatId, content)
-    setChatMessages((prev: ChatMessage[]) => [...prev, newMessage])
+  const handleSendMessage = async (content: string) => {
+    try {
+      await sendMessage(content)
+      showSuccess('Message sent!')
+    } catch (error) {
+      showError('Failed to send message', 'Please try again')
+    }
   }
 
   const handleSelectGroup = (group: Group) => {
     setActiveGroup(group)
     setCurrentView('study-groups')
-
-    // Load group chat messages
-    const groupChat = GroupChatService.getGroupChatByGroupId(group.id)
-    if (groupChat) {
-      setGroupChatMessages(groupChat.messages)
-    } else {
-      setGroupChatMessages([])
-    }
   }
 
   const handleCreateGroup = () => {
@@ -85,39 +127,24 @@ export default function HomePage() {
     setCurrentView('manage-groups')
   }
 
-  const handleSendGroupMessage = (content: string) => {
-    if (!activeGroup) return
-
-    const newMessage = GroupChatService.sendMessageToGroup(activeGroup.id, content, currentUser)
-    setGroupChatMessages((prev: GroupChatMessage[]) => [...prev, newMessage])
-
-    // Simulate responses in group chat
-    GroupChatService.simulateIncomingMessage(activeGroup.id)
-  }
-
-
-
-  const handleSwitchRole = () => {
-    const newRole = currentUser.role === "student" ? "professor" : "student"
-    UserService.switchToRole(newRole)
-    setCurrentUser(UserService.getCurrentUser())
-
-    // Reset view when switching roles
-    if (newRole === "professor") {
-      setCurrentView('study-groups')
-    } else {
-      setCurrentView('study-groups')
+  const handleSendGroupMessage = async (content: string) => {
+    try {
+      await sendGroupMessage(content)
+    } catch (error) {
+      showError('Failed to send message', 'Please try again')
     }
-    setActiveChatId(null)
-    setSelectedProfessor(null)
-    setChatMessages([])
-    setActiveGroup(null)
-    setGroupChatMessages([])
   }
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen)
+
+
+
+
+  const handleLogout = async () => {
+    await logout()
+    // NextAuth will handle the redirect automatically
   }
+
+
 
   const renderMainContent = () => {
     if (currentView === 'search') {
@@ -147,7 +174,7 @@ export default function HomePage() {
       )
     }
 
-    if (currentView === 'study-groups' && activeGroup) {
+    if (currentView === 'study-groups' && activeGroup && currentUser) {
       return (
         <StudyGroupInterface
           group={activeGroup}
@@ -160,15 +187,17 @@ export default function HomePage() {
       )
     }
 
-    if (currentView === 'manage-groups' && currentUser.role === 'professor') {
+    if (currentView === 'manage-groups' && currentUser?.role === 'professor') {
       return (
         <ProfessorGroupManagement
-          professorId={currentUser.professorId || currentUser.id}
+          professorId={currentUser?.professorId || currentUser?.id || ''}
           onOpenGroupChat={handleSelectGroup}
           className="h-full"
         />
       )
     }
+
+    // Removed test dashboard - no longer needed
 
     return (
       <div className="h-full flex items-center justify-center">
@@ -180,6 +209,18 @@ export default function HomePage() {
             : 'Search for professors to start a conversation'
           }
         </p>
+      </div>
+    )
+  }
+
+  // Show loading state while checking authentication
+  if (isPageLoading || authLoading || !isAuthenticated || !currentUser) {
+    return (
+      <div className="flex h-screen bg-background items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
       </div>
     )
   }
@@ -232,35 +273,76 @@ export default function HomePage() {
               <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
                 <span className="text-accent-foreground font-bold text-sm">I</span>
               </div>
-              <h1 className="font-heading font-bold text-xl">Inframes Chat</h1>
+              <h1 className="font-heading font-bold text-xl">Inframe Chat</h1>
             </div>
 
-            {/* Navigation Tabs */}
+            {/* Navigation Tabs - Role-based */}
             <div className="flex gap-2">
-              <Button
-                variant={currentView === 'search' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setCurrentView('search')}
-              >
-                Find Professors
-              </Button>
-              <Button
-                variant={currentView === 'study-groups' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setCurrentView('study-groups')}
-              >
-                Study Groups
-              </Button>
-              {currentUser.role === 'professor' && (
-                <Button
-                  variant={currentView === 'manage-groups' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setCurrentView('manage-groups')}
-                >
-                  Manage Groups
-                </Button>
+              {currentUser?.role === 'student' && (
+                <>
+                  <Button
+                    variant={currentView === 'search' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setCurrentView('search')}
+                  >
+                    Find Professors
+                  </Button>
+                  <Button
+                    variant={currentView === 'study-groups' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setCurrentView('study-groups')}
+                  >
+                    Study Groups
+                  </Button>
+                </>
               )}
-              {selectedProfessor && (
+
+              {currentUser?.role === 'professor' && (
+                <>
+                  <Button
+                    variant={currentView === 'study-groups' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setCurrentView('study-groups')}
+                  >
+                    Study Groups
+                  </Button>
+                  <Button
+                    variant={currentView === 'manage-groups' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setCurrentView('manage-groups')}
+                  >
+                    Manage Groups
+                  </Button>
+                </>
+              )}
+
+              {currentUser?.role === 'admin' && (
+                <>
+                  <Button
+                    variant={currentView === 'search' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setCurrentView('search')}
+                  >
+                    Find Professors
+                  </Button>
+                  <Button
+                    variant={currentView === 'study-groups' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setCurrentView('study-groups')}
+                  >
+                    Study Groups
+                  </Button>
+                  <Button
+                    variant={currentView === 'manage-groups' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setCurrentView('manage-groups')}
+                  >
+                    Manage Groups
+                  </Button>
+                </>
+              )}
+
+              {selectedProfessor && currentUser?.role === 'student' && (
                 <Button
                   variant={currentView === 'chat' ? 'default' : 'ghost'}
                   size="sm"
@@ -273,21 +355,29 @@ export default function HomePage() {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Role Switcher for Demo */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSwitchRole}
-              className="text-xs"
-            >
-              Switch to {currentUser.role === 'student' ? 'Professor' : 'Student'}
-            </Button>
 
-            {/* User Info */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                {currentUser.name} ({currentUser.role})
-              </span>
+
+
+            {/* User Info & Actions */}
+            <div className="flex items-center gap-2 relative z-40">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <UserIcon className="h-4 w-4" />
+                <span>{currentUser.name} ({currentUser.role})</span>
+              </div>
+
+              <button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleLogout()
+                }}
+                className="inline-flex items-center justify-center gap-2 rounded-md text-xs font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-destructive h-9 px-3 text-muted-foreground relative z-50 cursor-pointer border border-border"
+                title="Logout"
+                type="button"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Logout</span>
+              </button>
             </div>
           </div>
         </div>

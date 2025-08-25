@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { ChatSession } from "@/types/chat"
-import { ChatService } from "@/services/chatService"
+import { useChatStore } from "@/stores"
 
 interface ChatItem {
   id: string
@@ -38,13 +38,9 @@ export default function ChatSidebar({
   activeChatId
 }: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("")
-  const [chatSessions, setChatSessions] = useState<ChatSession[]>([])
+  const { chatSessions } = useChatStore()
 
-  useEffect(() => {
-    // Load chat sessions from service
-    const sessions = ChatService.getChatSessions()
-    setChatSessions(sessions)
-  }, [])
+  // Chat sessions are now managed by Zustand store
 
   // Convert ChatSession to ChatItem format
   const chatItems: ChatItem[] = chatSessions.map(session => ({
@@ -83,7 +79,8 @@ export default function ChatSidebar({
       key={chat.id}
       onClick={() => {
         onSelectChat?.(chat.id)
-        ChatService.markAsRead(chat.id)
+        // TODO: Implement mark as read functionality
+        console.log('Mark as read:', chat.id)
       }}
       className={`w-full p-3 rounded-lg text-left transition-all duration-200 group hover:bg-sidebar-accent ${
         activeChatId === chat.id ? "bg-accent/20 border border-accent/30" : "hover:bg-sidebar-accent"

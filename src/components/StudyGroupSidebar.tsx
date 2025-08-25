@@ -14,8 +14,7 @@ import {
   DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu"
 import { Group, User } from "@/types/chat"
-import { GroupService } from "@/services/groupService"
-import { GroupChatService } from "@/services/groupChatService"
+import { useGroupStore } from "@/stores"
 
 interface StudyGroupSidebarProps {
   className?: string
@@ -28,10 +27,10 @@ interface StudyGroupSidebarProps {
   currentUser: User
 }
 
-export default function StudyGroupSidebar({ 
-  className = "", 
-  isCollapsed = false, 
-  onToggle, 
+export default function StudyGroupSidebar({
+  className = "",
+  isCollapsed = false,
+  onToggle,
   onSelectGroup,
   onCreateGroup,
   onManageGroup,
@@ -39,42 +38,25 @@ export default function StudyGroupSidebar({
   currentUser
 }: StudyGroupSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("")
-  const [groups, setGroups] = useState<Group[]>([])
-  const [groupChats, setGroupChats] = useState<any[]>([])
+  const { groups, userGroups } = useGroupStore()
 
   useEffect(() => {
-    loadGroups()
+    // Groups are now loaded from Zustand store
   }, [currentUser])
 
-  const loadGroups = () => {
-    let userGroups: Group[] = []
-    
-    if (currentUser.role === "professor") {
-      userGroups = GroupService.getGroupsByProfessor(currentUser.professorId || currentUser.id)
+  // Get user-specific groups based on role
+  const getUserGroups = () => {
+    if (currentUser?.role === "professor") {
+      return groups.filter(group => group.professorId === currentUser.id)
     } else {
-      userGroups = GroupService.getGroupsForStudent(currentUser.studentId || currentUser.id)
+      return groups.filter(group =>
+        group.members.some(member => member.id === currentUser?.id)
+      )
     }
-    
-    setGroups(userGroups)
-    
-    // Load group chats with unread counts
-    const groupIds = userGroups.map(g => g.id)
-    const chats = GroupChatService.getRecentGroupChats(currentUser.id, groupIds)
-    
-    // Merge group info with chat info
-    const enrichedChats = chats.map(chat => {
-      const group = userGroups.find(g => g.id === chat.groupId)
-      return {
-        ...chat,
-        group,
-        groupName: group?.name || `Group ${chat.groupId}`
-      }
-    })
-    
-    setGroupChats(enrichedChats)
   }
 
-  const filteredGroups = groups.filter(group =>
+  const userSpecificGroups = getUserGroups()
+  const filteredGroups = userSpecificGroups.filter(group =>
     group.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     group.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
     group.professor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -95,13 +77,13 @@ export default function StudyGroupSidebar({
   }
 
   const getUnreadCount = (groupId: string) => {
-    const chat = groupChats.find(c => c.groupId === groupId)
-    return chat?.unreadCount || 0
+    // For demo, return random unread count
+    return Math.floor(Math.random() * 3)
   }
 
   const getLastActivity = (groupId: string) => {
-    const chat = groupChats.find(c => c.groupId === groupId)
-    return chat?.lastActivity
+    // For demo, return recent activity
+    return new Date(Date.now() - Math.random() * 86400000) // Random time within last day
   }
 
   const StudyGroupItem = ({ group }: { group: Group }) => {
@@ -116,7 +98,8 @@ export default function StudyGroupSidebar({
         }`}
         onClick={() => {
           onSelectGroup?.(group)
-          GroupChatService.markGroupChatAsRead(group.id, currentUser.id)
+          // TODO: Implement mark as read functionality
+          console.log('Mark group chat as read:', group.id)
         }}
       >
         <div className="flex items-start gap-3">

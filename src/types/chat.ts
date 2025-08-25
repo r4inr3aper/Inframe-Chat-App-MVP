@@ -44,10 +44,16 @@ export interface User {
   studentId?: string
   professorId?: string
   department: string
-  role: "student" | "professor"
+  role: "student" | "professor" | "admin"
   year?: number
   batch?: string
   semester?: number
+  // Professor fields
+  specialization?: string[]
+  bio?: string
+  officeHours?: string
+  subjects?: string[]
+  isOnline?: boolean
 }
 
 export interface Group {
@@ -72,7 +78,7 @@ export interface GroupChatMessage {
   timestamp: Date
   senderId: string
   senderName: string
-  senderRole: "student" | "professor"
+  senderRole: "student" | "professor" | "admin"
   senderAvatar?: string
   type: "text" | "image" | "file"
   fileUrl?: string

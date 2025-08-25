@@ -1,8 +1,8 @@
-# Inframes Chat App - Backend Architecture Documentation
+# Inframe Chat App - Backend Architecture Documentation
 
 ## Project Overview
 
-Inframes Chat is a student-professor communication platform that facilitates direct messaging between students and professors, and enables professors to create and manage study groups. The platform has two main user roles with distinct functionalities.
+Inframe Chat is a student-professor communication platform that facilitates direct messaging between students and professors, and enables professors to create and manage study groups. The platform has two main user roles with distinct functionalities.
 
 ## Core Features & User Flows
 
@@ -426,7 +426,7 @@ USER_OFFLINE: { userId: "uuid" }
 
 ### Environment Variables
 ```
-DATABASE_URL=postgresql://user:pass@localhost:5432/inframes_chat
+DATABASE_URL=postgresql://user:pass@localhost:5432/Inframe_chat
 JWT_SECRET=your_jwt_secret_key
 JWT_REFRESH_SECRET=your_refresh_secret_key
 REDIS_URL=redis://localhost:6379
@@ -441,7 +441,7 @@ PORT=8000
 
 ### Database Setup
 1. Install PostgreSQL
-2. Create database: `createdb inframes_chat`
+2. Create database: `createdb Inframe_chat`
 3. Run migrations to create tables
 4. Seed with sample data from provided JSON files
 
